@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-blue: #00f3ff;
+  --color-neon-purple: #8a2be2;
+  --color-neon-pink: #ff00ff;
+  --color-neon-gold: #ffb800;
+  --color-cyber-yellow: #ffff00;
+  --color-deep-space: #000011;
+  --color-space-gray: #0a0a1a;
+  --color-panel: #0d0d20;
+  --font-display: "Orbitron", "Arial Black", sans-serif;
+}
+
+@layer base {
+  * { scrollbar-width: thin; scrollbar-color: rgba(0,243,255,0.3) transparent; }
+  body {
+    background-color: var(--color-deep-space);
+    color: #e8ecff;
+    font-family: Inter, system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); letter-spacing: 0.04em; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,243,255,0.25); border-radius: 3px; }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(10, 10, 26, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 243, 255, 0.15);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.06), inset 0 0 20px rgba(0, 243, 255, 0.03);
+  }
+  .glass-hover:hover { border-color: rgba(0, 243, 255, 0.4); box-shadow: 0 0 30px rgba(0, 243, 255, 0.15); }
+  .neon-text {
+    background: linear-gradient(90deg, #00f3ff, #8a2be2, #ff00ff);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .glow-pulse { animation: pulse-glow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(0,243,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,243,255,0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .scanline::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(transparent 50%, rgba(0,243,255,0.02) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+  }
+  .float-slow { animation: float-slow 6s ease-in-out infinite; }
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 18px rgba(0, 243, 255, 0.25); }
+    50% { box-shadow: 0 0 38px rgba(138, 43, 226, 0.45); }
+  }
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+}
