@@ -34,7 +34,6 @@ def db():
     finally:
         conn.close()
 
-# Init tables
 def init_db():
     with db() as c:
         c.executescript("""
@@ -49,6 +48,25 @@ def init_db():
             id INTEGER PRIMARY KEY, agent_id INTEGER,
             role TEXT, content TEXT, created_at TEXT);
         """)
+    # Populate agents if empty
+    with db() as c:
+        cur = c.execute("SELECT id FROM agents LIMIT 1")
+        if not cur.fetchone():
+            defaults = [
+                ("Hermes Agent", "agent", "openrouter", "nousresearch/hermes-4-70b", "#00f3ff", "zap",
+                 "Tu es Hermes, un agent généraliste rapide et direct.", "[]"),
+                ("OpenClaw", "agent", "anthropic", "claude-sonnet-4", "#ff00ff", "claw",
+                 "Tu es OpenClaw, spécialiste des tâches complexes.", "[]"),
+                ("DeepSeek", "model", "deepseek", "deepseek-chat", "#8a2be2", "brain",
+                 "Tu es un modèle économique pour les tâches simples.", "[]"),
+                ("Mistral", "model", "mistral", "mistral-large-latest", "#ffb800", "wind",
+                 "Tu es Mistral, équilibré et efficace.", "[]"),
+            ]
+            for name, kind, prov, model, color, icon, sp, sk in defaults:
+                c.execute(
+                    "INSERT INTO agents(name,kind,provider,model,color,icon,system_prompt,skills,created_at)"
+                    " VALUES(?,?,?,?,?,?,?,?,?)",
+                    (name, kind, prov, model, color, icon, sp, sk, datetime.now(timezone.utc).isoformat()))
 
 init_db()
 
@@ -100,10 +118,12 @@ async def chat(data: dict):
         "⚡ [MODE DÉMO] Je suis {name}. Message reçu : « {msg} ». Configure une clé API pour des réponses réelles.",
         "🔮 [SIMULATION] {name} ici. Ta demande serait traitée par {model}.",
     ]
+    # agent is sql.Row object -> use dict access
+    an = dict(agent) if agent else {}
     reply = replies[int(datetime.now().timestamp()) % len(replies)].format(
-        name=agent["name"] if isinstance(agent, dict) else agent[2],
+        name=an.get("name", "Hermes Agent"),
         msg=message[:120],
-        model=agent.get("model", "unknown") if isinstance(agent, dict) else agent[4]
+        model=an.get("model", "unknown")
     )
     
     now = datetime.now(timezone.utc).isoformat()
