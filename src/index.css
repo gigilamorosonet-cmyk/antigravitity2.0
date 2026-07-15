@@ -26,13 +26,13 @@
 }
 
 @layer utilities {
-  .glass {
+  .glass, .cyber-glass {
     background: rgba(10, 10, 26, 0.65);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(0, 243, 255, 0.15);
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.06), inset 0 0 20px rgba(0, 243, 255, 0.03);
   }
-  .glass-hover:hover { border-color: rgba(0, 243, 255, 0.4); box-shadow: 0 0 30px rgba(0, 243, 255, 0.15); }
+  .glass-hover:hover, .cyber-glass:hover { border-color: rgba(0, 243, 255, 0.4); box-shadow: 0 0 30px rgba(0, 243, 255, 0.15); }
   .neon-text {
     background: linear-gradient(90deg, #00f3ff, #8a2be2, #ff00ff);
     background-size: 200% 200%;
