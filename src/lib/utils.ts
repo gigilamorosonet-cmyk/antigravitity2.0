@@ -17,11 +17,7 @@ export async function api<T = any>(path: string, options: RequestInit = {}): Pro
       ...(options.headers || {}),
     },
   })
-  if (res.status === 401) {
-    localStorage.removeItem('an_token')
-    window.location.href = '/auth'
-    throw new Error('Session expirée')
-  }
+  // Pas de redirection en mode démo publique
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
     throw new Error(body.detail || `Erreur ${res.status}`)
