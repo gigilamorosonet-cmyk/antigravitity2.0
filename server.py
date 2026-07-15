@@ -1,8 +1,9 @@
-from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import json
+from pydantic import BaseModel
 import os
 from pathlib import Path
 from datetime import datetime, timezone
@@ -139,6 +140,56 @@ async def add_memory(data: dict):
                   (data.get("agent_id"), data.get("scope", "global"), data.get("content"), now))
     return {"ok": True}
 
+# workflows table
+def init_workflows():
+    with db() as c:
+        c.execute("CREATE TABLE IF NOT EXISTS workflows(id INTEGER PRIMARY KEY, name TEXT, data TEXT, updated_at TEXT)")
+
+init_workflows()
+
+class WorkflowIn(BaseModel):
+    name: str
+    data: dict
+
+@app.get("/api/workflows")
+async def list_workflows():
+    with db() as c:
+        rows = c.execute("SELECT id, name, updated_at FROM workflows ORDER BY id DESC LIMIT 10").fetchall()
+    return {"workflows": [dict(r) for r in rows]}
+
+@app.get("/api/workflows/{wf_id}")
+async def get_workflow(wf_id: int):
+    with db() as c:
+        row = c.execute("SELECT * FROM workflows WHERE id=?", (wf_id,)).fetchone()
+    if not row:
+        raise HTTPException(404, "Workflow introuvable")
+    return {**dict(row), "data": json.loads(row["data"] or "{}")}
+
+@app.post("/api/workflows")
+async def save_workflow(body: WorkflowIn):
+    now = datetime.now(timezone.utc).isoformat()
+    with db() as c:
+        row = c.execute("SELECT id FROM workflows WHERE name=?", (body.name,)).fetchone()
+        if row:
+            c.execute("UPDATE workflows SET data=?, updated_at=? WHERE id=?",
+                      (json.dumps(body.data), now, row["id"]))
+            return {"id": row["id"]}
+        cur = c.execute("INSERT INTO workflows(name,data,updated_at) VALUES(?,?,?)",
+                        (body.name, json.dumps(body.data), now))
+    return {"id": cur.lastrowid}
+
+@app.delete("/api/workflows/{wf_id}")
+async def del_workflow(wf_id: int):
+    with db() as c:
+        c.execute("DELETE FROM workflows WHERE id=?", (wf_id,))
+    return {"ok": True}
+
+@app.post("/api/workflows/run-task")
+async def run_task(data: dict):
+    """Execute workflow task via agent"""
+    return await chat(data)
+
+# ------------------------------------------------------------------ stats
 @app.get("/api/stats")
 async def get_stats():
     """Get usage stats (empty for demo)"""
