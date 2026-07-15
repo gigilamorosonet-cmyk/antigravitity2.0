@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log*
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/*.db
+.backend venv/
+
+# Build
+dist/
+.cache/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
